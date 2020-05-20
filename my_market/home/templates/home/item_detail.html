@@ -1,0 +1,23 @@
+{% extends 'home/base.html' %}
+{% block content %}
+
+{% include 'home/category_card.html' %}
+
+
+
+<div class="container-fluid mt-1">
+  <div class="card">
+  <div class="card-body bg-light mb-1">
+  	 <li class="list-group "><h4>{{item.title}}<h4></li>
+  	 <li class="list-group mb-1 ">Цена:</li>
+  	 <li class="list-group mb-1 ">{{item.price}}</li>
+  	 <li class="list-group mb-1 ">Описание:</li>
+  	 <li class="list-group mb-1 ">{{item.body}}</li>
+  </div>
+
+ </div>
+
+</div>
+
+
+{% endblock %}
