@@ -36,4 +36,5 @@ class ItemModel(models.Model):
 				raise ValidationError('Недопустимое разрешение или размер картинки')
 		else:
 			super(Item, self).save(*args, **kwargs)
-	
+
+
