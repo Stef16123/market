@@ -9,9 +9,14 @@ from .models import CustomUser
 
 
 class CustomUserAdmin(UserAdmin):
-    add_form = CustomUserCreationForm
-    form = CustomUserChangeForm
-    model = CustomUser
-    list_display = ['email', 'username',]
-
+	add_form = CustomUserCreationForm
+	form = CustomUserChangeForm
+	model = CustomUser
+	list_display = ['username', 'id', 'email']
+	# Установить кастомные поля для изменения
+	# fieldsets = (
+	# 	(None, {'fields': ('email', 'password')}),
+	# 	('Personal info', {'fields': ('bio',)}),
+	# 	('Permissions', {'fields': ('',)}),
+	# )
 admin.site.register(CustomUser, CustomUserAdmin)

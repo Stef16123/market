@@ -11,10 +11,10 @@
 
   <div class="card">
 
-  	{% for content in items_list %}
+  	{% for content in products %}
   <div class="card-body bg-light mb-2">
 
-  	 <li class="list-group "><h4><a href="{% url 'item_detail_url' slug=content.slug%}">{{content.title}}</a><h4></li>
+  	 <li class="list-group "><h4><a href="{% url 'product_detail_url' slug=content.slug%}">{{content.title}}</a><h4></li>
       <li class="list-group mb-1 ">   {% if content.image %}
     <p> <img src="{{content.image.url}}"></p>
  
@@ -24,8 +24,9 @@
   	 <li class="list-group mb-1 ">Цена:</li>
   	 <li class="list-group mb-1 ">{{content.price}}</li>
 	
-  	 <li class="list-group mb-1 ">Описание:</li>
+  	 <li class="list-group mb-1 "> Краткое описание:</li>
   	 <li class="list-group mb-1 ">{{content.body}}</li>
+     {{content.image.url}}
   	 
   
    

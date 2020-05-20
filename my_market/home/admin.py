@@ -5,10 +5,12 @@ from .models import *
 
 # Register your models here.
 
-@admin.register(ItemModel)
-class ItemAdmin(admin.ModelAdmin):
+@admin.register(ProductDescribeModel)
+class ProductAdmin(admin.ModelAdmin):
 	list_display = ('title', 'price' ,'image', 'get_category')
 
 
 admin.site.register(CategoryModel)
-# admin.site.register(Item, ItemAdmin)
+
+admin.site.register(ProductModel)
+admin.site.register(BasketModel)

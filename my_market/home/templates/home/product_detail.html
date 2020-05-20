@@ -1,0 +1,32 @@
+{% extends 'home/base.html' %}
+{% block content %}
+
+<!-- {% include 'home/category_card.html' %} -->
+
+<div class="container-fluid mt-1">
+<div class="block-center">
+  <div class="card ">
+
+  <div class="card-body bg-light mb-1">
+  	 <li class="list-group  "><h4>{{product.title}}</h4></li>
+  	 	{% if product.image %}
+  	 	<li class="list-group mb-1 "> 
+  	 		<p> <img src="{{product.image.url}}"></li> </p>
+  	 	{% else %}
+   			<p> Нет изображения </p>
+		{% endif %}</li>
+
+  	 <li class="list-group mb-1 ">Цена:</li>
+  	 <li class="list-group mb-1 ">{{product.price}}</li>
+  	 <li class="list-group mb-1 ">Описание:</li>
+  	 <li class="list-group mb-1 ">{{product.body}}</li>
+     
+  	 <!-- <button type="button" class="btn btn-primary btn-lg" action="{url 'basket_url' id=produ}" method="get" >Купить</button> -->
+  </div>
+
+ </div>
+
+</div>
+
+
+{% endblock %}

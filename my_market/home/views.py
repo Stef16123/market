@@ -1,6 +1,6 @@
 from django.shortcuts import render
 
-from .models import CategoryModel, ItemModel
+from .models import CategoryModel, ProductDescribeModel
 
 # Create your views here.
 
@@ -8,26 +8,29 @@ from .models import CategoryModel, ItemModel
 
 def home(request):
 	categoryes = CategoryModel.objects.all()
-	items = ItemModel.objects.all()
+	products = ProductDescribeModel.objects.all()
 	context = {
 	'categoryes_list' : categoryes,
-	'items_list' : items,
+	'products' : products,
 	}
 	return render(request, 'home/index.html', context)
 
 def search_category(request, slug):
 	srch_cat = CategoryModel.objects.get(slug__iexact=slug)
-	items = srch_cat.item.all()
+	products = srch_cat.item.all()
 	categoryes = CategoryModel.objects.all()
 	context = {
 	'categoryes_list' : categoryes,
-	'items_list' : items,
+	'products' : products,
 	'srch_cat' : srch_cat,
 	}
 	return render(request, 'home/index.html', context)
 
 
-def item_detail(request, slug):
-	item_detail = ItemModel.objects.get(slug__iexact=slug)
-	context = {'item': item_detail}
-	return render(request, 'home/item_detail.html', context)
+def product_detail(request, slug):
+	product_detail = ProductDescribeModel.objects.get(slug__iexact=slug)
+	context = {'product': product_detail}
+	return render(request, 'home/product_detail.html', context)
+
+def basket(request):
+	pass
