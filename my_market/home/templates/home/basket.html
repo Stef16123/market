@@ -1,0 +1,28 @@
+{% extends 'home/base.html' %}
+{% block content %}
+
+<div class="container-fluid mt-1">
+<div class="block-center">
+  <div class="card ">
+
+  <div class="card-body bg-light mb-1">
+  	 <li class="list-group  "><h4>Товары в корзине:</h4></li>
+ 
+  	 {% for product in basket_list %}
+  	 <li class="list-group mb-1 ">
+  	 	<a href="{% url 'product_detail_url' slug=product.product_describe.slug %}">{{product.product_describe}}</a>
+  	 </li>
+
+  	{%  endfor %}
+
+
+      
+  </div>
+  <li class="list-group mb-1 ">Товаров на сумму: {{sum_p}} </li>
+  
+ </div>
+
+</div>
+
+
+{% endblock %}

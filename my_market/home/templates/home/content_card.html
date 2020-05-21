@@ -21,12 +21,11 @@
 {% else %}
    <p> Нет изображения </p>
 {% endif %}</li>
-  	 <li class="list-group mb-1 ">Цена:</li>
-  	 <li class="list-group mb-1 ">{{content.price}}</li>
-	
+  	 <li class="list-group mb-1 ">Цена: {{content.price}}</li>
+  	 <li class="list-group mb-1 "></li>
+	   <li class="list-group mb-1 "> Колличество товаров на складе {{content.product.count_products}}</li>
   	 <li class="list-group mb-1 "> Краткое описание:</li>
   	 <li class="list-group mb-1 ">{{content.body}}</li>
-     {{content.image.url}}
   	 
   
    

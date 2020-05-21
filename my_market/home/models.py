@@ -1,7 +1,9 @@
 from django.db import models
 from django.core.exceptions import ValidationError
-
+#Библиотека для обработки изображений
 from PIL import Image as img_p
+
+from django.shortcuts import reverse
 
 # users/models.py
 from users.models import CustomUser 
@@ -49,13 +51,19 @@ class ProductDescribeModel(models.Model):
 		if self.image:
 			im = img_p.open(self.image)
 			if (im.size[0] <= 564) or (im.size[1] <= 564):
-				super(ItemModel, self).save(*args, **kwargs)
+				super(ProductDescribeModel, self).save(*args, **kwargs)
 			else:
 				raise ValidationError('Недопустимое разрешение или размер картинки')
 		else:
-			super(Item, self).save(*args, **kwargs)
+			super(ProductDescribeModel, self).save(*args, **kwargs)
 
 # Корзина, которая должна хранить id пользователя и номер товара
 class BasketModel(models.Model):
-	user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
-	product_id = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
+	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
+	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
+	product_describe = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE, blank=True, default=None)
+
+	
+	def __str__(self):
+		return str(self.product_id)
+

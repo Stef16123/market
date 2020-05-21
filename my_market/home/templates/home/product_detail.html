@@ -8,20 +8,27 @@
   <div class="card ">
 
   <div class="card-body bg-light mb-1">
-  	 <li class="list-group  "><h4>{{product.title}}</h4></li>
-  	 	{% if product.image %}
+  	 <li class="list-group  "><h4>{{product_describe.title}}</h4></li>
+  	 	{% if product_describe.image %}
   	 	<li class="list-group mb-1 "> 
-  	 		<p> <img src="{{product.image.url}}"></li> </p>
+  	 		<p> <img src="{{product_describe.image.url}}"></li> </p>
   	 	{% else %}
    			<p> Нет изображения </p>
 		{% endif %}</li>
 
-  	 <li class="list-group mb-1 ">Цена:</li>
-  	 <li class="list-group mb-1 ">{{product.price}}</li>
+  	 <li class="list-group mb-1 ">Цена: {{product_describe.price}}</li>
+  	 <li class="list-group mb-1 "></li>
+     <li class="list-group mb-1 "> Колличество товаров на складе {{product_describe.product.count_products}}</li>
   	 <li class="list-group mb-1 ">Описание:</li>
-  	 <li class="list-group mb-1 ">{{product.body}}</li>
-     
-  	 <!-- <button type="button" class="btn btn-primary btn-lg" action="{url 'basket_url' id=produ}" method="get" >Купить</button> -->
+  	 <li class="list-group mb-1 ">{{product_describe.body}}</li>
+       <!-- <form action="{url 'basket_url' prd_id=product_id, slug=product_detail.category.slug}", method="get"> -->
+        <!-- {{request.user.id}} -->
+<!-- <form action="{{ .get_absolute_url}}", method="get"> -->
+<a href="{% url 'add_basket_url' slug=product_describe.slug prd_id=product_id%}">
+
+  	 <button type="submit" class="btn btn-primary btn-lg">Купить</button>
+    </a>
+    <!-- </form> -->
   </div>
 
  </div>
