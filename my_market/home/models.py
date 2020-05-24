@@ -50,14 +50,14 @@ class ProductDescribeModel(models.Model):
 
 # Проверка загружаемой картинки на разрешение х на х, ограничение на загружаемые данные в settings.py
 	def clean(self, *args, **kwargs):
-		if self.image:
-			im = img_p.open(self.image)
-			if (im.size[0] <= 564) or (im.size[1] <= 564):
-				super(ProductDescribeModel, self).save(*args, **kwargs)
-			else:
-				raise ValidationError('Недопустимое разрешение или размер картинки')
-		else:
+		if not self.image or img_p.open(self.image).size <= (564,564):
 			super(ProductDescribeModel, self).save(*args, **kwargs)
+		else:
+			raise ValidationError('Недопустимое разрешение картинки')
+
+
+
+
 
 # Корзина, которая должна хранить id пользователя и номер товара
 class BasketModel(models.Model):

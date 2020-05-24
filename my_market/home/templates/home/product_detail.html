@@ -24,7 +24,7 @@
        <!-- <form action="{url 'basket_url' prd_id=product_id, slug=product_detail.category.slug}", method="get"> -->
         <!-- {{request.user.id}} -->
 <!-- <form action="{{ .get_absolute_url}}", method="get"> -->
-<a href="{% url 'add_basket_url' slug=product_describe.slug prd_id=product_id%}">
+<a href="{% url 'add_basket_url' slug=product_describe.slug product_id=product_id%}">
 
   	 <button type="submit" class="btn btn-primary btn-lg">Купить</button>
     </a>
