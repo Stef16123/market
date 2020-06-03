@@ -1,4 +1,16 @@
-# from django import forms
+from django import forms
+
+class SearchProductsForm(forms.Form):
+	title = forms.CharField(max_length=70, required =False, label="Название товара")
+	from_money = forms.IntegerField(required =False)
+	up_to_money = forms.IntegerField(required =False)
+
+
+
+
+
+
+
 
 # from .models import Item
 # from PIL import Image as img_p

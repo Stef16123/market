@@ -29,7 +29,7 @@ class CategoryModel(models.Model):
 		return self.title
 
 	"""Поиск товаров по категории"""
-	def search_by_category(self, slug, page_number):
+	def search_by_category(self, slug, page_number, form):
 		products_category = self.objects.get(slug__iexact=slug)
 		products = products_category.product_describe.all()
 		paginator, page_products = get_paginate(page_number, products)
@@ -38,7 +38,8 @@ class CategoryModel(models.Model):
 		'categoryes_list' : categoryes,
 		'products' : page_products,
 		'products_category' : products_category,
-		'paginator' : paginator
+		'paginator' : paginator,
+		'form' : form,
 		}
 		return context
 
@@ -63,7 +64,7 @@ class ProductDescribeModel(models.Model):
 	body = models.TextField(max_length=1000)
 	category = models.ManyToManyField(CategoryModel, related_name='product_describe', blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
-
+	pub_date =  models.DateField(auto_now_add=True)
 
 	def __str__(self):
 		return self.title
@@ -87,6 +88,9 @@ class ProductDescribeModel(models.Model):
 		'product_id' : product_id,
 		}
 		return context
+
+	"""Поиск товара/ов"""
+	# def search_products(self)
 
 # Корзина, которая должна хранить id пользователя и номер товара
 class BasketModel(models.Model):
