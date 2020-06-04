@@ -18,14 +18,18 @@
 
       
   </div>
+  {% if basket_list %}
   <li class="list-group mb-1 ">Товаров на сумму: <h5>{{sum_product}}</h5> </li>
    <div class="card-body bg-light mb-1">
-     <li  <button type="submit" class="btn btn-primary btn-lg">Очистить корзину</button></li>
-       <li <button type="submit" class="btn btn-primary btn-lg">Купить товары в корзине</button></li>
-            
+    <form class="form-inline my-2 my-lg-0" action="{% url 'clear_basket_url' %}" method='post'>{% csrf_token %}
+     <li>  <button type="submit" class="btn btn-primary btn-lg">Очистить корзину</button></li>
+     </form>
+     <form class="form-inline my-2 my-lg-0" action="{% url 'phone_for_order_url' %}" method='post'>{% csrf_token %}
+       <li> <button type="submit" class="btn btn-primary btn-lg" > Оформить товары в корзине</button></li>
+    </form>
 </div>
 
-  
+   {% endif %}
  </div>
 
 </div>

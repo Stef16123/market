@@ -1,0 +1,8 @@
+{% extends 'home/base.html' %}
+{% block content %}
+Для оформления заказа введите свой номер телефона
+<form class="form-inline my-2 my-lg-0" action="{% url 'products_on_order_url' %}" method='post'>{% csrf_token %}
+<input class="form-control mr-sm-2" type="text" placeholder="Номер телефона" aria-label="Number" name="phone">
+<button class="btn btn-outline-success my-2 my-sm-0" type="submit" >номер</button>
+</form>
+{% endblock %}

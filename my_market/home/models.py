@@ -1,6 +1,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
+from django.http import HttpResponse
+
 # from django.shortcuts import reverse
 #Библиотека для обработки изображений
 from PIL import Image as img_p
@@ -92,6 +94,11 @@ class ProductDescribeModel(models.Model):
 	"""Поиск товара/ов"""
 	# def search_products(self)
 
+
+
+
+
+
 # Корзина, которая должна хранить id пользователя и номер товара
 class BasketModel(models.Model):
 	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
@@ -119,13 +126,74 @@ class BasketModel(models.Model):
 	def add_to_basket(self, slug, product_id, user):
 		product = ProductModel.objects.get(product_id = product_id)
 		describe = ProductDescribeModel.objects.get(product=product_id)
+
 		# Надо переделать 
 		if product.count_products > 0:
 			user_basket = self.objects.create( user=user, product=product, product_describe=describe)
+			
 			product.count_products -= 1
 			user_basket.save()
 			product.save()
 			return "Товар успешно добавлен в корзину"
 		return "Товара нет на складе"
-	
 
+	def delete_basket(self,user_id):
+		user_basket = BasketModel.objects.filter(user_id=user_id)
+		user_basket.delete()
+
+
+class OrderModel(models.Model):
+	# order_number = models.IntegerField()
+	phone_number = models.CharField(max_length=11)
+	confirmation = models.BooleanField(default=False)
+	user = models.CharField(max_length=70)
+	# products_id = 
+	# basket = models.ForeignKey(BasketModel, on_delete=models.CASCADE)
+
+	def __str__(self):
+		return str(self.id)
+
+
+	# def get_order_number(self):
+	def get_order(self,request):
+		if request.POST:
+					
+			phone_number = request.POST.get('phone')
+			user = request.user.username
+			user_id = request.user.id
+			order  = self.objects.create( user=user, phone_number = phone_number)
+			order.save()
+
+			user_basket = BasketModel.objects.filter(user_id=user_id)
+
+			for i in user_basket:
+				products_order = ProductOrderModel.objects.create( product=i.product_id, order=order)
+				products_order.save()
+
+			user_basket.delete()
+			return HttpResponse('Наши операторы уже занимаются подтверждением заказа, ожидайте звонка на ваш телефон')
+		return HttpResponse('У нас технические шоколадки')
+
+class ProductOrderModel(models.Model):
+	# product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
+	product = models.IntegerField(default=0)
+	order =  models.ForeignKey(OrderModel, on_delete=models.CASCADE, blank=True)
+
+	def __str__(self):
+		return str(self.product)
+
+	# def if_confirmate(self, order_id):
+	# 	product_id = self.basket.product_id
+	# 	order = self.objects.get(order_id) 
+	# 	if 
+
+# def add_to_basket(self, slug, product_id, user):
+# 		describe = ProductDescribeModel.objects.get(product=product_id)
+# 		# Надо переделать 
+# 		if product.count_products > 0:
+# 			user_basket = self.objects.create( user=user, product=product, product_describe=describe)
+# 			product.count_products -= 1
+# 			user_basket.save()
+# 			product.save()
+# 			return "Товар успешно добавлен в корзину"
+# 		return "Товара нет на складе"

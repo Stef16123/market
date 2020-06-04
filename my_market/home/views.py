@@ -1,11 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from django.core.paginator import Paginator
+from django.shortcuts import redirect
 
 from users.models import CustomUser
-from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate
+from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel
 from .forms import SearchProductsForm
 
+"""Поиск товаров"""
 def search_products(request):
 	categoryes = CategoryModel.objects.all()
 	page_number = request.GET.get('page',1)
@@ -83,3 +85,16 @@ def get_basket(request):
 		context = BasketModel.sum_basket(BasketModel,user)
 		return render(request, 'home/basket.html', context)
 	return HttpResponse("Войдите в свою учетную запись")
+
+"""Отображение формы для ввода номера телефона"""
+def phone_for_order(request):
+	return render(request, 'home/order.html')
+
+"""Оформление заказа заказа"""
+def products_on_order(request):
+	return OrderModel.get_order(OrderModel, request)
+
+def clear_basket(request):
+	user_id = request.user.id
+	BasketModel.delete_basket(BasketModel,user_id)
+	return redirect('basket_url')

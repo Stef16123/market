@@ -10,10 +10,27 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(BasketModel)
 class BasketAdmin(admin.ModelAdmin):
-	list_display = ('__str__', 'get_username')
-	list_filter = ('product_describe__title',)
- 
+	list_display = ('get_username', '__str__', 'id', )
+	list_filter = ('product_describe__title', 'user')
+
+
+@admin.register(ProductModel)
+class ProductModel(admin.ModelAdmin):
+	list_display = ('product_id', 'article')
+
+@admin.register(OrderModel)
+class OrderModel(admin.ModelAdmin):
+	list_display = ('id', 'user', 'confirmation')
+	list_filter = ('user', 'confirmation')
+
+@admin.register(ProductOrderModel)
+class ProductOrderModel(admin.ModelAdmin):
+	list_display = ('product', 'order')
+
+# admin.site.register(OrderModel)
 admin.site.register(CategoryModel)
-admin.site.register(ProductModel)
+# admin.site.register(ProductModel)
+# admin.site.register(ProductOrderModel)
+
 
  
