@@ -4,7 +4,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import redirect
 
 from users.models import CustomUser
-from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel
+from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel
 from .forms import SearchProductsForm
 
 """Поиск товаров"""
@@ -98,3 +98,8 @@ def clear_basket(request):
 	user_id = request.user.id
 	BasketModel.delete_basket(BasketModel,user_id)
 	return redirect('basket_url')
+
+
+def test(request):
+	products = ProductOrderModel.change_count(ProductOrderModel, 21)
+	return HttpResponse([i for i in products])

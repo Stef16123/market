@@ -9,6 +9,7 @@ from PIL import Image as img_p
 # users/models.py
 # Импорт пользовательского юзера
 from users.models import CustomUser 
+from django.db.models import Q
 
 # Функции, которые невозможно отнести к конкретной модели здесь:
 
@@ -128,14 +129,14 @@ class BasketModel(models.Model):
 		describe = ProductDescribeModel.objects.get(product=product_id)
 
 		# Надо переделать 
-		if product.count_products > 0:
-			user_basket = self.objects.create( user=user, product=product, product_describe=describe)
+		# if product.count_products > 0:
+		user_basket = self.objects.create( user=user, product=product, product_describe=describe)
 			
-			product.count_products -= 1
-			user_basket.save()
-			product.save()
-			return "Товар успешно добавлен в корзину"
-		return "Товара нет на складе"
+		# 	product.count_products -= 1
+		user_basket.save()
+			# product.save()
+		return "Товар успешно добавлен в корзину"
+		# return "Товара нет на складе"
 
 	def delete_basket(self,user_id):
 		user_basket = BasketModel.objects.filter(user_id=user_id)
@@ -153,6 +154,11 @@ class OrderModel(models.Model):
 	def __str__(self):
 		return str(self.id)
 
+	def save(self, *args, **kwargs):
+		if self.confirmation == True:
+			ProductOrderModel.change_count(ProductOrderModel,self.id)
+		super(OrderModel, self).save(*args, **kwargs)
+
 
 	# def get_order_number(self):
 	def get_order(self,request):
@@ -165,35 +171,36 @@ class OrderModel(models.Model):
 			order.save()
 
 			user_basket = BasketModel.objects.filter(user_id=user_id)
+			# productttts = ProductModel.objects.filter(basket__)	
 
 			for i in user_basket:
-				products_order = ProductOrderModel.objects.create( product=i.product_id, order=order)
+				product = i.product
+				products_order = ProductOrderModel.objects.create( product=product, order=order)
 				products_order.save()
 
 			user_basket.delete()
 			return HttpResponse('Наши операторы уже занимаются подтверждением заказа, ожидайте звонка на ваш телефон')
 		return HttpResponse('У нас технические шоколадки')
 
+
+
+
 class ProductOrderModel(models.Model):
-	# product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
-	product = models.IntegerField(default=0)
+	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True, related_name='product_order')
+	# product = models.IntegerField(default=0)
 	order =  models.ForeignKey(OrderModel, on_delete=models.CASCADE, blank=True)
 
 	def __str__(self):
 		return str(self.product)
 
-	# def if_confirmate(self, order_id):
-	# 	product_id = self.basket.product_id
-	# 	order = self.objects.get(order_id) 
-	# 	if 
-
-# def add_to_basket(self, slug, product_id, user):
-# 		describe = ProductDescribeModel.objects.get(product=product_id)
-# 		# Надо переделать 
-# 		if product.count_products > 0:
-# 			user_basket = self.objects.create( user=user, product=product, product_describe=describe)
-# 			product.count_products -= 1
-# 			user_basket.save()
-# 			product.save()
-# 			return "Товар успешно добавлен в корзину"
-# 		return "Товара нет на складе"
+	def change_count(self, order_id):
+		order_id = OrderModel.objects.get(id=order_id)
+		# products = ProductOrderModel.objects.filter(order=order_id)
+		# products = ProductOrderModel.objects.filter(order=order_id)
+		products = ProductModel.objects.filter(product_order__order=order_id)
+		count =  ProductModel.objects.filter(product_order__order=order_id).count()
+		for i in range(0,count):
+			product = ProductModel.objects.filter(product_order__order=order_id)[i]
+			product.count_products -= 1
+			# if product.count_products > 0:
+			product.save()
