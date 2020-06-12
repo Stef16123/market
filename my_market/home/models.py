@@ -19,7 +19,6 @@ def get_paginate(page_number, products):
 	page_products = paginator.get_page(page_number)
 	return paginator, page_products
 
-
 # Create your models here.
 
 
@@ -48,7 +47,7 @@ class CategoryModel(models.Model):
 
 	
 
-"""Основная информация о модели"""
+"""Основная информация о товаре"""
 class ProductModel(models.Model):
 	product_id = models.AutoField(primary_key=True)
 	article = models.IntegerField(unique=True)
@@ -58,7 +57,7 @@ class ProductModel(models.Model):
 	def __str__(self):
 		return str(self.article)
 
-"""Описание модели"""
+"""Описание товара"""
 class ProductDescribeModel(models.Model):
 	title = models.CharField(max_length=70)
 	slug = models.SlugField(max_length=200, unique=True)
@@ -68,6 +67,7 @@ class ProductDescribeModel(models.Model):
 	category = models.ManyToManyField(CategoryModel, related_name='product_describe', blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
 	pub_date =  models.DateField(auto_now_add=True)
+
 
 	def __str__(self):
 		return self.title
@@ -92,15 +92,71 @@ class ProductDescribeModel(models.Model):
 		}
 		return context
 
-	"""Поиск товара/ов"""
-	# def search_products(self)
+
+
+"""Рейтинг товара"""
+class RatingModel(models.Model):
+	product = models.OneToOneField(ProductDescribeModel, on_delete=models.CASCADE)
+	rating = models.IntegerField()
+	voites = models.IntegerField(default=1)
+
+	
+	def change_rating(self, slug):
+		product = ProductDescribeModel.objects.get(slug__iexact=slug)
+		rating = RatingModel.objects.get(product__slug__iexact=slug)
+		voites = RatingModel.objects.filter(mark__product=product).count()
+		rating.voites = voites
+		rating.rating = (MarkModel.sum_marks(MarkModel,slug))/rating.voites
+
+		# raiting = RatingModel.objects.create(product=)
+		rating.save()
+
+	def __str__(self):
+		return str(self.product)
+
+
+
+
+"""Модель оценки товара пользователм"""
+class MarkModel(models.Model):
+	mark = models.IntegerField(default=0)
+	# token = models.CharField(max_length=250)
+	product = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE)
+	rating = models.ForeignKey(RatingModel, on_delete=models.CASCADE, related_name="mark")
+
+
+
+	def create_or_update_mark(self, slug, mark, old_mark):
+		product = ProductDescribeModel.objects.get(slug__iexact=slug)
+		rating = RatingModel.objects.get(product=product)
+		if old_mark:
+			mark_tmp = MarkModel.objects.filter(product__slug__iexact=slug, mark=old_mark).first()
+			# mark_tmp.mark = mark
+			# mark_tmp.save()
+			mark_tmp.delete()
+		# else:
+		mark_tmp =  MarkModel.objects.create(mark=mark, product=product, rating=rating)
+		mark_tmp.save()
+
+
+
+	def sum_marks(self, slug):
+		marks = MarkModel.objects.filter(product__slug__iexact=slug)
+		sum_marks = 0
+		for mark in marks:
+			sum_marks += mark.mark
+		return sum_marks
+
+
+
+	def __str__(self):
+		return str(self.product)
 
 
 
 
 
-
-# Корзина, которая должна хранить id пользователя и номер товара
+"""Корзина"""
 class BasketModel(models.Model):
 	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
@@ -127,29 +183,19 @@ class BasketModel(models.Model):
 	def add_to_basket(self, slug, product_id, user):
 		product = ProductModel.objects.get(product_id = product_id)
 		describe = ProductDescribeModel.objects.get(product=product_id)
-
-		# Надо переделать 
-		# if product.count_products > 0:
 		user_basket = self.objects.create( user=user, product=product, product_describe=describe)
-			
-		# 	product.count_products -= 1
 		user_basket.save()
-			# product.save()
 		return "Товар успешно добавлен в корзину"
-		# return "Товара нет на складе"
 
 	def delete_basket(self,user_id):
 		user_basket = BasketModel.objects.filter(user_id=user_id)
 		user_basket.delete()
 
-
+"""Модель, описывающая заказ"""
 class OrderModel(models.Model):
-	# order_number = models.IntegerField()
 	phone_number = models.CharField(max_length=11)
 	confirmation = models.BooleanField(default=False)
 	user = models.CharField(max_length=70)
-	# products_id = 
-	# basket = models.ForeignKey(BasketModel, on_delete=models.CASCADE)
 
 	def __str__(self):
 		return str(self.id)
@@ -159,48 +205,39 @@ class OrderModel(models.Model):
 			ProductOrderModel.change_count(ProductOrderModel,self.id)
 		super(OrderModel, self).save(*args, **kwargs)
 
-
-	# def get_order_number(self):
+	"""Создание заказа"""
 	def get_order(self,request):
 		if request.POST:
-					
 			phone_number = request.POST.get('phone')
 			user = request.user.username
 			user_id = request.user.id
 			order  = self.objects.create( user=user, phone_number = phone_number)
 			order.save()
-
 			user_basket = BasketModel.objects.filter(user_id=user_id)
-			# productttts = ProductModel.objects.filter(basket__)	
-
 			for i in user_basket:
 				product = i.product
 				products_order = ProductOrderModel.objects.create( product=product, order=order)
 				products_order.save()
-
 			user_basket.delete()
 			return HttpResponse('Наши операторы уже занимаются подтверждением заказа, ожидайте звонка на ваш телефон')
 		return HttpResponse('У нас технические шоколадки')
 
 
 
-
+"""Модель описывающая товар на который оформлен заказ"""
 class ProductOrderModel(models.Model):
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True, related_name='product_order')
-	# product = models.IntegerField(default=0)
 	order =  models.ForeignKey(OrderModel, on_delete=models.CASCADE, blank=True)
 
 	def __str__(self):
 		return str(self.product)
 
+	"""Изменение колличества товара на складе при подтверждении заказа"""
 	def change_count(self, order_id):
 		order_id = OrderModel.objects.get(id=order_id)
-		# products = ProductOrderModel.objects.filter(order=order_id)
-		# products = ProductOrderModel.objects.filter(order=order_id)
 		products = ProductModel.objects.filter(product_order__order=order_id)
 		count =  ProductModel.objects.filter(product_order__order=order_id).count()
 		for i in range(0,count):
 			product = ProductModel.objects.filter(product_order__order=order_id)[i]
 			product.count_products -= 1
-			# if product.count_products > 0:
 			product.save()

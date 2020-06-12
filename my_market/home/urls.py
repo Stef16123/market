@@ -15,6 +15,8 @@ urlpatterns = [
     # path('category/<str:slug>/search/', search_by_category, name='category_url'),
 
     path('home/<str:slug>/', product_detail , name='product_detail_url'),
+    path('home/<str:slug>/changemark', product_mark , name='product_mark_url'),
+
     path('home/<str:slug>/add_basket/<str:product_id>/', get_message, name='add_basket_url'),
     
 ]

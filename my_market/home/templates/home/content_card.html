@@ -15,6 +15,7 @@
   <div class="card-body bg-light mb-2">
 
   	 <li class="list-group "><h4><a href="{% url 'product_detail_url' slug=content.slug%}">{{content.title}}</a><h4></li>
+     Рейтинг товара: {{content.ratingmodel.rating}}
       <li class="list-group mb-1 ">   {% if content.image %}
     <p> <img src="{{content.image.url}}"></p>
  
@@ -27,7 +28,10 @@
   	 <li class="list-group mb-1 "> Краткое описание:</li>
   	 <li class="list-group mb-1 ">{{content.body}}</li>
   	 
-  
+  <a href="{% url 'add_basket_url' slug=content.slug product_id=content.product_id%}">
+
+     <button type="submit" class="btn btn-primary btn-lg">Добавить в корзину</button>
+    </a>
    
   </div>
 

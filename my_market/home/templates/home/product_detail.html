@@ -15,6 +15,23 @@
   	 	{% else %}
    			<p> Нет изображения </p>
 		{% endif %}</li>
+    Оцените товар:
+    1
+<form action="{% url 'product_mark_url' slug=product_describe.slug %}", method="post">
+  {% csrf_token %}
+1<input type="radio" id="star-1" name="rating" value="1">
+2<input type="radio" id="star-2" name="rating" value="2">
+3<input type="radio" id="star-3" name="rating" value="3">
+4<input type="radio" id="star-4" name="rating" value="4">
+5<input type="radio" id="star-5" name="rating" value="5">
+
+6<input type="radio" id="star-6" name="rating" value="6">
+7<input type="radio" id="star-7" name="rating" value="7">
+8<input type="radio" id="star-8" name="rating" value="8">
+9<input type="radio" id="star-9" name="rating" value="9">
+10<input type="radio" id="star-10" name="rating" value="10">
+ <button type="submit" class="btn btn-primary btn-lg">Оценить</button>
+</form>
 
   	 <li class="list-group mb-1 ">Цена: {{product_describe.price}}</li>
   	 <li class="list-group mb-1 "></li>
@@ -26,9 +43,16 @@
 <!-- <form action="{{ .get_absolute_url}}", method="get"> -->
 <a href="{% url 'add_basket_url' slug=product_describe.slug product_id=product_id%}">
 
-  	 <button type="submit" class="btn btn-primary btn-lg">Купить</button>
+  	 <button type="submit" class="btn btn-primary btn-lg">Добавить в корзину</button>
+    </a>
+
+<a href="">
+
+     <button type="submit" class="btn btn-primary btn-lg">Назад к списку товаров</button>
     </a>
     <!-- </form> -->
+
+
   </div>
 
  </div>

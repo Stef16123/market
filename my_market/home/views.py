@@ -4,14 +4,16 @@ from django.core.paginator import Paginator
 from django.shortcuts import redirect
 
 from users.models import CustomUser
-from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel
+from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel
 from .forms import SearchProductsForm
+
 
 """Поиск товаров"""
 def search_products(request):
 	categoryes = CategoryModel.objects.all()
 	page_number = request.GET.get('page',1)
 	form = SearchProductsForm(request.GET)
+
 	if form.is_valid():
 		title = request.GET.get('title')
 		from_money = request.GET.get('from_money')
@@ -38,7 +40,7 @@ def search_products(request):
 
 		return render(request, 'home/index.html', context)
 
-
+"""Домашняя страница"""
 def home(request):
 	products = ProductDescribeModel.objects.all()
 	form = SearchProductsForm() 
@@ -52,9 +54,7 @@ def home(request):
 	'form' : form,
 	}
 	context['last_question'] = '?'
-
 	return render(request, 'home/index.html', context)
-
 
 
 
@@ -70,6 +70,18 @@ def products_by_category(request, slug):
 def product_detail(request, slug):
 	context = ProductDescribeModel.get_product(ProductDescribeModel,slug)
 	return render(request, 'home/product_detail.html', context)
+
+def product_mark(request,slug):
+	old_mark = False
+	mark = int(request.POST.get('rating'))
+	if request.session.get(slug, False):
+		old_mark = request.session[slug]
+	request.session[slug] = mark
+	MarkModel.create_or_update_mark(MarkModel, slug, mark, old_mark)
+	RatingModel.change_rating(RatingModel, slug)
+	return redirect('/home/%s' % (slug))
+
+
 
 """добавление товара и вывод сообщения после добавления в корзину"""
 def get_message(request, slug, product_id):
@@ -94,6 +106,7 @@ def phone_for_order(request):
 def products_on_order(request):
 	return OrderModel.get_order(OrderModel, request)
 
+"""Очистка корзины"""
 def clear_basket(request):
 	user_id = request.user.id
 	BasketModel.delete_basket(BasketModel,user_id)
@@ -101,5 +114,5 @@ def clear_basket(request):
 
 
 def test(request):
-	products = ProductOrderModel.change_count(ProductOrderModel, 21)
-	return HttpResponse([i for i in products])
+	ser_mark = UserMarkModel.objects.filter(token='233333').first() # Костыль
+	return HttpResponse(ser_mark) 
