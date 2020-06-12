@@ -22,9 +22,15 @@ def search_products(request):
 		up_to_money = request.GET.get('up_to_money')
 		if up_to_money == '':
 			up_to_money = 9999999
-		
 
-		products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
+		if request.GET.get('maxrating'):
+			products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-rating__rating')
+		else:
+			products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
+
+		if request.GET.get('stock'):
+			products = products.filter(product__count_products__gt=0)
+			
 		paginator, page_products = get_paginate(page_number,products)
 		context = {
 		'categoryes_list' : categoryes,
@@ -32,11 +38,13 @@ def search_products(request):
 		'paginator' : paginator,
 		'form' : form,
 		}
-		context['last_question'] = '?csrfmiddlewaretoken=%s&from_money=%s&up_to_money=%s&title=%s&' % (
+		context['last_question'] = '?csrfmiddlewaretoken=%s&from_money=%s&up_to_money=%s&title=%s&stock=%s&maxrating=%s&' % (
 			request.GET.get('csrfmiddlewaretoken'), 
 			request.GET.get('from_money'),  
 			request.GET.get('up_to_money'), 
-			request.GET.get('title'))
+			request.GET.get('title'),
+			request.GET.get('stock'),
+			request.GET.get('maxrating'))
 
 		return render(request, 'home/index.html', context)
 

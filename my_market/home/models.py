@@ -96,7 +96,7 @@ class ProductDescribeModel(models.Model):
 
 """Рейтинг товара"""
 class RatingModel(models.Model):
-	product = models.OneToOneField(ProductDescribeModel, on_delete=models.CASCADE)
+	product = models.OneToOneField(ProductDescribeModel, on_delete=models.CASCADE, related_name="rating")
 	rating = models.IntegerField()
 	voites = models.IntegerField(default=1)
 
