@@ -15,7 +15,7 @@ from django.db.models import Q
 
 """Получить пагинацию для товаров"""
 def get_paginate(page_number, products):
-	paginator = Paginator(products, 5)
+	paginator = Paginator(products, 2)
 	page_products = paginator.get_page(page_number)
 	return paginator, page_products
 
@@ -31,7 +31,7 @@ class CategoryModel(models.Model):
 		return self.title
 
 	"""Поиск товаров по категории"""
-	def search_by_category(self, slug, page_number, form):
+	def list_by_category(self, slug, page_number, form):
 		products_category = self.objects.get(slug__iexact=slug)
 		products = products_category.product_describe.all()
 		paginator, page_products = get_paginate(page_number, products)
@@ -67,7 +67,7 @@ class ProductDescribeModel(models.Model):
 	category = models.ManyToManyField(CategoryModel, related_name='product_describe', blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
 	pub_date =  models.DateField(auto_now_add=True)
-
+	popular = models.IntegerField(default=0)
 
 	def __str__(self):
 		return self.title
@@ -91,6 +91,18 @@ class ProductDescribeModel(models.Model):
 		'product_id' : product_id,
 		}
 		return context
+
+	# def if_popular(self):
+	# 	BasketModel.objects.all()
+	# 	BasketModel.objects.get()
+	# 	if product_describe
+
+	# def get_back(self,request):
+	# 	referer = request.META.get("HTTP_REFERER")
+	# # check that next is safe
+	# 	if not is_safe_url(referer,  allowed_hosts=request.get_host()):
+	# 		referer = 'home/'
+	# 	return redirect(referer)
 
 
 
@@ -162,6 +174,8 @@ class BasketModel(models.Model):
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
 	product_describe = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE, blank=True, default=None)
 	
+
+
 # ф-я для получения в админ панеле имени пользователя
 	def get_username(self):
 		return self.user.username
@@ -185,11 +199,18 @@ class BasketModel(models.Model):
 		describe = ProductDescribeModel.objects.get(product=product_id)
 		user_basket = self.objects.create( user=user, product=product, product_describe=describe)
 		user_basket.save()
+		describe.popular += 1
+		describe.save()
+		
+
 		return "Товар успешно добавлен в корзину"
 
 	def delete_basket(self,user_id):
-		user_basket = BasketModel.objects.filter(user_id=user_id)
-		user_basket.delete()
+		user_baskets = BasketModel.objects.filter(user_id=user_id)
+		for user_basket in user_baskets:
+			user_basket.product_describe.popular -= 1
+			user_basket.product_describe.save()
+		user_baskets.delete()
 
 """Модель, описывающая заказ"""
 class OrderModel(models.Model):

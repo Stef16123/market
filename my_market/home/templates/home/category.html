@@ -1,0 +1,98 @@
+{% extends 'home/base.html' %} 
+{% block content %}
+
+{% include 'home/category_card.html' %}
+
+  <div class="col-8">
+
+<div class="row bg-light">
+  <div class="col-sm-8">Цена:
+      <form class="form-inline my-2 my-lg-0" action="{% url 'search_by_category_url' slug=products_category.slug %}" method='get'>
+        {% csrf_token %}
+
+        
+        
+       
+      <div class="col-sm-3">От
+{{form.from_money}}
+
+      <!-- <input type="text"  placeholder="от" name="ot" value=0> -->
+    </div>
+    <div class="col-sm-3">До
+    	 {{form.up_to_money}}
+      <!-- <input type="text"  placeholder="до" name="do" value=9999999> -->
+    </div>
+    <div class="row-sm-3"> 
+      <!-- <input class="form-control mr-sm-2" type="search" placeholder="Название товара" aria-label="Search" name="name"> -->
+      	{{form.title}}
+      <button class="btn btn-outline-success my-2 my-sm-0" type="submit" >поиск</button>
+    </div>
+   
+ 
+<div class="row-sm-3"> 
+    Популярные товары
+<input type="checkbox" aria-label="Checkbox for following text input " name='popular'>
+ </div>   
+  Товары с максимальным рейтингом
+<input type="checkbox" aria-label="Checkbox for following text input " name='maxrating'>
+    <!-- Товары в наличии -->
+<!-- <input type="checkbox" aria-label="Checkbox for following text input " name='stock'> -->
+ </form>
+  </div>
+  <div class="col-sm-4 ">
+
+</div>
+</div>
+
+
+{% include 'home/content_card.html' %}
+
+
+<footer class="page-footer font-small blue pt-4">
+<nav aria-label="...">
+  <ul class="pagination">
+    <li class="page-item">
+      {% if products.has_previous %}
+      <a class="page-link" href="{{last_question}}page={{products.previous_page_number}}" tabindex="-1" aria-disabled="true">Previous</a>
+        {% endif %}
+    </li>
+{% for i in paginator.page_range %}
+
+	{% if i == products.number %}
+
+ <li class="page-item active" aria-current="page">
+  
+      <a class="page-link" href="{{last_question}}page={{i}}">{{i}}<span class="sr-only">(current)</span></a>
+
+    </li>
+
+{% elif products.number < i|add:'3' and products.number > i|add:'-3' %} 
+
+    <li class="page-item"><a class="page-link" href="{{last_question}}page={{i}}">{{i}}</a></li>
+
+{% endif %}
+{% endfor %}
+    <li class="page-item">
+      {%if products.has_next %}
+      <a class="page-link" href="{{last_question}}page={{products.next_page_number}}">Next</a>
+      {% endif %}
+    </li>
+  </ul>
+</nav>
+</footer>
+
+
+
+ </div>
+
+</div>
+
+
+
+</div>
+</div>
+
+
+
+
+{% endblock %}
