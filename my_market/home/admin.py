@@ -39,6 +39,7 @@ admin.site.register(MarkModel)
 
 # admin.site.register(ProductModel)
 # admin.site.register(ProductOrderModel)
+admin.site.register(CouponModel)
 
-
+CouponModel
  

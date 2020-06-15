@@ -176,7 +176,7 @@ class BasketModel(models.Model):
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
 	product_describe = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE, blank=True, default=None)
 	count = models.IntegerField(default=1)
-
+	# cost = models.IntegerField(default=1)
 
 # ф-я для получения в админ панеле имени пользователя
 	def get_username(self):
@@ -187,20 +187,25 @@ class BasketModel(models.Model):
 
 
 	"""Вычисление суммы лежащих в корзине товаров"""
-	def sum_basket(self, user):
+	def sum_basket(self, user, coupon):
 		basket_list = self.objects.filter(user=user)
 		sum_product = 0
 		for product in basket_list:
-			sum_product += product.product_describe.price
+			sum_product += product.product_describe.price * product.count * coupon
 		context = {'basket_list' : basket_list, 'sum_product' : sum_product}
 		return context
 
 	"""Добавление товара в корзину"""
-	def add_to_basket(self, slug, product_id, user):
+	def add_to_basket(self, slug, product_id, user, count_to_order):
 		product = ProductModel.objects.get(product_id = product_id)
 		describe = ProductDescribeModel.objects.get(product=product_id)
-		user_basket = self.objects.create( user=user, product=product, product_describe=describe)
-		user_basket.save()
+		if self.objects.filter(user=user, product_describe__slug__iexact=slug).first():
+			user_basket = self.objects.filter(user=user, product_describe__slug__iexact=slug).first()
+			user_basket.count = count_to_order
+			user_basket.save()
+		else:
+			user_basket = self.objects.create( user=user, product=product, product_describe=describe, count=count_to_order)
+			user_basket.save()
 		describe.popular += 1
 		describe.save()
 		
@@ -273,3 +278,20 @@ class ProductOrderModel(models.Model):
 			product = ProductModel.objects.filter(product_order__order=order_id)[i]
 			product.count_products -= 1
 			product.save()
+
+
+class CouponModel(models.Model):
+	name = models.CharField(max_length=100)
+	value = models.FloatField(default=1)
+	active = models.BooleanField(default=True)
+
+	def is_coupon(self, name):
+		coupon = self.objects.filter(name=name).first()
+		if coupon:
+			if coupon.active:
+				return coupon
+			# return False
+		return False
+
+
+

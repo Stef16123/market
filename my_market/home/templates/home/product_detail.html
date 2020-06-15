@@ -60,16 +60,17 @@
         <!-- {{request.user.id}} -->
 
 <!-- <form action="{{ .get_absolute_url}}", method="get"> -->
-<a href="{% url 'add_basket_url' slug=product_describe.slug product_id=product_id%}">
+<a href="{% url 'add_basket_url' slug=product_describe.slug product_id=product_id count_to_order=count_to_order %}">
 
   	 <button type="submit" class="btn btn-primary btn-lg">Добавить в корзину</button>
     </a>
 
-<a href="{{referer}}">
-
+<form action="{% url 'back_url' %}", method='get'>
+     <input type="hidden" name='back' >
      <button type="submit" class="btn btn-primary btn-lg">Назад к списку товаров</button>
-    </a>
-    <!-- </form> -->
+
+</form>
+
 
 
   </div>

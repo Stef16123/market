@@ -7,8 +7,8 @@ from django.http import HttpResponseRedirect
 
 
 from users.models import CustomUser
-from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel
-from .forms import SearchProductsForm
+from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel, CouponModel
+from .forms import SearchProductsForm, CouponForm
 
 
 """Поиск товаров"""
@@ -63,6 +63,7 @@ def home(request):
 	'products' : page_products,
 	'paginator' : paginator,
 	'form' : form,
+	'count_to_order' : 1,
 	}
 	context['last_question'] = '?'
 	return render(request, 'home/index.html', context)
@@ -91,14 +92,7 @@ def search_by_category(request,slug):
 		up_to_money = request.GET.get('up_to_money')
 		if up_to_money == '':
 			up_to_money = 9999999
-		# response.GET.get('products_category')
 		products = ProductDescribeModel.objects.filter(title__icontains=title, category__slug=slug).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
-
-		# if request.GET.get('maxrating'):
-		# 	products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-rating__rating')
-		# else:
-		# 	products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
-
 		if request.GET.get('popular') == 'on':
 			products = ProductDescribeModel.objects.filter(title__icontains=title, category__slug=slug, popular__gt=0).filter(price__gte=from_money, price__lte=up_to_money).order_by('-popular')
 
@@ -126,11 +120,13 @@ def search_by_category(request,slug):
 """Страница  с подробностями о товаре"""
 def product_detail(request, slug):
 	context = ProductDescribeModel.get_product(ProductDescribeModel,slug)
-	referer = request.headers['Referer']
-	context['referer'] = referer
 	products_on_stock = context['product_describe'].product.count_products
 	count_to_order = get_count(request, slug, products_on_stock)
 	context['count_to_order'] = count_to_order
+	# last_question = question
+
+
+
 	# if request.GET.get('last_question'):
 	# context['last_question'] = last_question
 	# return HttpResponse(request.session['product_info'][slug])
@@ -149,17 +145,21 @@ def product_mark(request,slug):
 
 
 """добавление товара и вывод сообщения после добавления в корзину"""
-def get_message(request, slug, product_id):
+def get_message(request, slug, product_id, count_to_order):
 	if request.user.id:
 		user = CustomUser.objects.get(id = request.user.id)
-		return HttpResponse(BasketModel.add_to_basket(BasketModel,slug, product_id, user))
+		return HttpResponse(BasketModel.add_to_basket(BasketModel,slug, product_id, user, count_to_order))
 	return HttpResponse("Прежде чем добавить товар в корзину, войдите в свою учетную запись")# надо добавить валид еррор
 
 """Отобразить корзину"""
-def get_basket(request):
+def get_basket(request,coupon=1):
 	if request.user.id:
 		user = CustomUser.objects.get(id = request.user.id)
-		context = BasketModel.sum_basket(BasketModel,user)
+		# if request.POST.get('coupon'):
+		# 	coupon = request.POST.get('coupon')
+		# else:
+		# 	coupon = 1
+		context = BasketModel.sum_basket(BasketModel,user, coupon)
 		return render(request, 'home/basket.html', context)
 	return HttpResponse("Войдите в свою учетную запись")
 
@@ -197,7 +197,18 @@ def test(request):
 	return HttpResponse(ser_mark) 
 
 
-
+def change_count_basket(request, slug):
+	user = CustomUser.objects.get(id = request.user.id)
+	user_basket = BasketModel.objects.get(user=user, product_describe__slug__iexact=slug)
+	if request.POST.get('minus', False) == '0':
+		if user_basket.count > 1:
+			user_basket.count -= 1
+			user_basket.save()
+	if request.POST.get('plus', False) == '1':
+		if user_basket.count < user_basket.product.count_products:
+			user_basket.count += 1
+			user_basket.save()
+	return redirect('basket_url')
 # def back(request, slug):
 # 	referer = request.META.get("HTTP_REFERER")
 # 	# check that next is safe
@@ -205,64 +216,11 @@ def test(request):
 # 		referer = 'home/'
 # 	return redirect(referer)
 
-def back(request, last_question):
-	# context = {}
-	# context['last_question'] = '?'
+def back_url(request):
+	if request.GET.get('back', False):
+		return redirect(request.GET.get('back'))
+	return HttpResponse('SUKABLYAT')
 
-	# if request.GET.get('csrfmiddlewaretoken'):
-	# 	context['last_question'] += 'csrfmiddlewaretoken=%s' % (request.GET.get('csrfmiddlewaretoken'))
-	# if request.GET.get('from_money'):
-	# 	context['last_question'] += 'from_money=%s' % (request.GET.get('from_money'))
-	# if request.GET.get('up_to_money'):
-	# 	context['last_question'] += 'up_to_money=%s' % (request.GET.get('up_to_money'))
-	# if request.GET.get('title'):
-	# 	context['last_question'] += 'title=%s' % (request.GET.get('title'))
-	# if request.GET.get('popular'):
-	# 	context['last_question'] += 'popular=%s' % (request.GET.get('popular'))
-	# if request.GET.get('stock'):
-	# 	context['last_question'] += 'stock=%s' % (request.GET.get('stock'))
-	# if request.GET.get('maxrating'):
-	# 	context['last_question'] += 'maxrating=%s' % (request.GET.get('maxrating'))
-	# context['last_question'] += '&'
-	# if request.GET.get('page'):
-		# last_question += 'page=%s' % (request.GET.get('page'))
-	# return redirect(last_question)
-	# return HttpResponseRedirect(request.META.get('HTTP_REFERER','/'))
-	# referer = request.headers['Referer']
-	return redirect(last_question)
-	# context['last_question'] = '?csrfmiddlewaretoken=%s&from_money=%s&up_to_money=%s&title=%s&popular=%s&maxrating=%s&' % (
-	# 		request.GET.get('csrfmiddlewaretoken'), 
-	# 		request.GET.get('from_money'),  
-	# 		request.GET.get('up_to_money'), 
-	# 		request.GET.get('title'),
-	# 		request.GET.get('popular'),
-	# 		request.GET.get('maxrating')
-	# 		)request.GET.get('stock'),
-
-	# {{last_question}}page={{products.previous_page_number}}
-
-# def get_count(request):
-# 	if request.session.get('count_to_order'):
-# 		2/0
-
-# 		request.session['count_to_order'] = 0
-# 	if request.POST.get('minus'):
-# 		pass
-# 	if request.POST.get('plus'):
-
-# 		request.session['count_to_order'] += 1 
-# 	return HttpResponse(request.session.get('count_to_order'))
-
-# def get_count(request, slug, products_on_stock):
-# 	if not request.session.get('count_to_order'):
-# 		request.session['count_to_order'] = 0
-# 	if request.POST.get('minus', False) == '0':
-# 		if request.session.get('count_to_order') > 0:
-# 			request.session['count_to_order'] -= 1
-# 	if request.POST.get('plus', False) == '1':
-# 		if request.session['count_to_order'] <= products_on_stock:
-# 			request.session['count_to_order'] += 1
-# 	return HttpResponse(request.session.get('count_to_order'))
 
 def get_count(request, slug, products_on_stock):
 	if not request.session.get('product_info'):
@@ -287,3 +245,21 @@ def get_count(request, slug, products_on_stock):
 	return request.session['product_info'][slug]
 	# return redirect('')
 	# return HttpResponse(request.session['product_info'][slug])
+
+def get_coupon_form(request):
+	form = CouponForm()
+	context = {'form' : form}
+	return render(request, 'home/basket_coupon.html', context)
+
+def check_coupon(request):
+	if request.POST.get('name'):
+		coupon_name = request.POST.get('name')
+		# status_coupon = is_coupon(coupon)
+		if CouponModel.is_coupon(CouponModel,coupon_name):
+			coupon = CouponModel.is_coupon(CouponModel,coupon_name)
+			# coupon =  int(coupon)
+			return redirect('basket_url')
+			# return get_basket(request, coupon.value)
+		return HttpResponse('Неккоректный купон')
+	return HttpResponse('Вы не ввели купон')
+

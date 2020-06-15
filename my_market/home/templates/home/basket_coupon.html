@@ -1,0 +1,11 @@
+{% extends 'home/base.html' %}
+{% block content %}
+
+<form action="{% url 'check_coupon_url' %}" method="post"> 
+ {% csrf_token %}
+ Введите купон:
+{{form.name}}
+<button type="submit" class="btn btn-primary btn-lg" >Применить купон</button>
+
+</form>
+{% endblock %}

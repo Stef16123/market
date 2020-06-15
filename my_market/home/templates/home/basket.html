@@ -29,10 +29,15 @@ ul.hr li {
      </li>
 
     </ul>
-             <button type="submit" class="btn ">-</button>
- {{product.product_describe.tmp_count}}
- <button type="submit" class="btn ">+</button>
+<form action="{% url 'change_count_basket_url'  slug=product.product_describe.slug %}", method="post">
+        {% csrf_token %}
+
+<button type="submit" class="btn" name='minus' value="0">-</button>
+ {{product.count}}
+
+ <button type="submit" class="btn" name='plus'  value="1">+</button>
   	{%  endfor %}
+ </form>
 
 
       
@@ -46,6 +51,8 @@ ul.hr li {
      <form class="form-inline my-2 my-lg-0" action="{% url 'phone_for_order_url' %}" method='post'>{% csrf_token %}
        <li> <button type="submit" class="btn btn-primary btn-lg" > Оформить товары в корзине</button></li>
     </form>
+       <a  href="{% url 'get_coupon_form_url' %}"> <li> <button type="submit" class="btn btn-primary btn-lg""> Ввести купон</button></li>
+</a>
 </div>
 
    {% endif %}
