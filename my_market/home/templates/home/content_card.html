@@ -27,7 +27,11 @@
 	   <li class="list-group mb-1 "> Колличество товаров на складе {{content.product.count_products}}</li>
   	 <li class="list-group mb-1 "> Краткое описание:</li>
   	 <li class="list-group mb-1 ">{{content.body}}</li>
-  	 
+<!--   	              <button type="submit" class="btn ">-</button>
+
+ 
+ <button type="submit" class="btn ">+</button>
+ -->
   <a href="{% url 'add_basket_url' slug=content.slug product_id=content.product_id%}">
 
      <button type="submit" class="btn btn-primary btn-lg">Добавить в корзину</button>

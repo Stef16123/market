@@ -68,6 +68,8 @@ class ProductDescribeModel(models.Model):
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE)
 	pub_date =  models.DateField(auto_now_add=True)
 	popular = models.IntegerField(default=0)
+	# tmp_count = models.IntegerField(default=1)
+
 
 	def __str__(self):
 		return self.title
@@ -173,7 +175,7 @@ class BasketModel(models.Model):
 	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
 	product_describe = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE, blank=True, default=None)
-	
+	count = models.IntegerField(default=1)
 
 
 # ф-я для получения в админ панеле имени пользователя
@@ -212,11 +214,20 @@ class BasketModel(models.Model):
 			user_basket.product_describe.save()
 		user_baskets.delete()
 
+	def delete_product(self, user_id, slug):
+		user_baskets = BasketModel.objects.get(user_id=user_id, product_describe__slug__iexact=slug)
+		user_baskets.delete()
+
+
+
+
 """Модель, описывающая заказ"""
 class OrderModel(models.Model):
 	phone_number = models.CharField(max_length=11)
 	confirmation = models.BooleanField(default=False)
 	user = models.CharField(max_length=70)
+	cost = models.IntegerField(default=0)
+
 
 	def __str__(self):
 		return str(self.id)

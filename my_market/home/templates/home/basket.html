@@ -1,5 +1,17 @@
 {% extends 'home/base.html' %}
 {% block content %}
+<!-- <style type="text/css"> ul.hr {
+    margin: 0; /* Обнуляем значение отступов */
+    padding: 4px; /* Значение полей */
+   }
+ul.hr li {
+    display: inline; /* Отображать как строчный элемент */
+    margin-right: 5px; /* Отступ слева */
+    border: 1px solid #000; /* Рамка вокруг текста */
+    padding: 3px; /* Поля вокруг текста */
+   }
+
+ </style> -->
 
 <div class="container-fluid mt-1">
 <div class="block-center">
@@ -9,10 +21,17 @@
   	 <li class="list-group  "><h4>Товары в корзине:</h4></li>
  
   	 {% for product in basket_list %}
+     <ul class="list-group-item d-flex justify-content-between align-items-center">
   	 <li class="list-group mb-1 ">
-  	 	<a href="{% url 'product_detail_url' slug=product.product_describe.slug %}">{{product.product_describe}}</a>
-  	 </li>
+  	 	<a href="{% url 'product_detail_url' slug=product.product_describe.slug %}" >{{product.product_describe}}</a>
+      <a href="{% url 'delete_product_basket_url'  slug=product.product_describe.slug %}"> (Удалить с корзины) </a>
 
+     </li>
+
+    </ul>
+             <button type="submit" class="btn ">-</button>
+ {{product.product_describe.tmp_count}}
+ <button type="submit" class="btn ">+</button>
   	{%  endfor %}
 
 

@@ -36,10 +36,29 @@
   	 <li class="list-group mb-1 ">Цена: {{product_describe.price}}</li>
   	 <li class="list-group mb-1 "></li>
      <li class="list-group mb-1 "> Колличество товаров на складе {{product_describe.product.count_products}}</li>
+<!--      <li class="list-group mb-1 ">  
+
+
+      </li> -->
+<form action="{% url 'product_detail_url'  slug=product_describe.slug %}", method="post">
+  {% csrf_token %}
+
+ <button type="submit" class="btn" name='minus' value="0">-</button>
+ {% if count_to_order %}
+{{count_to_order}}
+ {% else %}
+<!-- 1 -->
+ 
+{% endif %}
+
+ <button type="submit" class="btn" name='plus'  value="1">+</button>
+
+ </form>
   	 <li class="list-group mb-1 ">Описание:</li>
   	 <li class="list-group mb-1 ">{{product_describe.body}}</li>
        <!-- <form action="{url 'basket_url' prd_id=product_id, slug=product_detail.category.slug}", method="get"> -->
         <!-- {{request.user.id}} -->
+
 <!-- <form action="{{ .get_absolute_url}}", method="get"> -->
 <a href="{% url 'add_basket_url' slug=product_describe.slug product_id=product_id%}">
 

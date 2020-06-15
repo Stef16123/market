@@ -26,12 +26,12 @@ def search_products(request):
 		if up_to_money == '':
 			up_to_money = 9999999
 
-		if request.GET.get('maxrating'):
+		if request.GET.get('maxrating') == 'on':
 			products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-rating__rating')
 		else:
 			products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
 
-		if request.GET.get('stock'):
+		if request.GET.get('stock') == 'on':
 			products = products.filter(product__count_products__gt=0)
 			
 		paginator, page_products = get_paginate(page_number,products)
@@ -99,10 +99,10 @@ def search_by_category(request,slug):
 		# else:
 		# 	products = ProductDescribeModel.objects.filter(title__icontains=title).filter(price__gte=from_money, price__lte=up_to_money).order_by('-pub_date')
 
-		if request.GET.get('popular'):
+		if request.GET.get('popular') == 'on':
 			products = ProductDescribeModel.objects.filter(title__icontains=title, category__slug=slug, popular__gt=0).filter(price__gte=from_money, price__lte=up_to_money).order_by('-popular')
 
-		if request.GET.get('maxrating'):
+		if request.GET.get('maxrating') == 'on':
 			products = products.order_by('-rating__rating')
 
 		paginator, page_products = get_paginate(page_number,products)
@@ -128,10 +128,12 @@ def product_detail(request, slug):
 	context = ProductDescribeModel.get_product(ProductDescribeModel,slug)
 	referer = request.headers['Referer']
 	context['referer'] = referer
+	products_on_stock = context['product_describe'].product.count_products
+	count_to_order = get_count(request, slug, products_on_stock)
+	context['count_to_order'] = count_to_order
 	# if request.GET.get('last_question'):
 	# context['last_question'] = last_question
-
-
+	# return HttpResponse(request.session['product_info'][slug])
 	return render(request, 'home/product_detail.html', context)
 
 def product_mark(request,slug):
@@ -175,6 +177,12 @@ def clear_basket(request):
 	BasketModel.delete_basket(BasketModel,user_id)
 	return redirect('basket_url')
 
+"""Убрать позицию с корзины"""
+def delete_product_basket(request,slug):
+	if request.user.id:
+		user_id = request.user.id
+		BasketModel.delete_product(BasketModel, user_id, slug)
+	return redirect('basket_url')	
 
 # def back(request):
 # 	back = request.META.get('HTTP_REFERER')
@@ -232,3 +240,50 @@ def back(request, last_question):
 	# 		)request.GET.get('stock'),
 
 	# {{last_question}}page={{products.previous_page_number}}
+
+# def get_count(request):
+# 	if request.session.get('count_to_order'):
+# 		2/0
+
+# 		request.session['count_to_order'] = 0
+# 	if request.POST.get('minus'):
+# 		pass
+# 	if request.POST.get('plus'):
+
+# 		request.session['count_to_order'] += 1 
+# 	return HttpResponse(request.session.get('count_to_order'))
+
+# def get_count(request, slug, products_on_stock):
+# 	if not request.session.get('count_to_order'):
+# 		request.session['count_to_order'] = 0
+# 	if request.POST.get('minus', False) == '0':
+# 		if request.session.get('count_to_order') > 0:
+# 			request.session['count_to_order'] -= 1
+# 	if request.POST.get('plus', False) == '1':
+# 		if request.session['count_to_order'] <= products_on_stock:
+# 			request.session['count_to_order'] += 1
+# 	return HttpResponse(request.session.get('count_to_order'))
+
+def get_count(request, slug, products_on_stock):
+	if not request.session.get('product_info'):
+
+		request.session['product_info'] = { slug : 1 }
+	if not slug in request.session.get('product_info'):
+		key = { slug : 1 }
+		# product_info = { slug : count_to_order }
+		request.session['product_info'].update(key)
+		# request.session['product_info'][slug] = 0
+
+		# request.session['count_to_order'] = 0
+	if request.POST.get('minus', False) == '0':
+		if request.session.get('product_info')[slug] > 1:
+			request.session['product_info'][slug] -= 1
+			request.session.save()
+	if request.POST.get('plus', False) == '1':
+		if request.session['product_info'][slug] < products_on_stock:
+			request.session['product_info'][slug] += 1
+			request.session.save()
+	# context['count_to_order'] = count_to_order
+	return request.session['product_info'][slug]
+	# return redirect('')
+	# return HttpResponse(request.session['product_info'][slug])
