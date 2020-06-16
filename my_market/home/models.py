@@ -201,6 +201,8 @@ class BasketModel(models.Model):
 		describe = ProductDescribeModel.objects.get(product=product_id)
 		if self.objects.filter(user=user, product_describe__slug__iexact=slug).first():
 			user_basket = self.objects.filter(user=user, product_describe__slug__iexact=slug).first()
+			# update_sum = self.sum_basket(self, user, 1)
+			# request.session['sum_product'] = context['sum_product']
 			user_basket.count = count_to_order
 			user_basket.save()
 		else:
@@ -231,6 +233,10 @@ class OrderModel(models.Model):
 	phone_number = models.CharField(max_length=11)
 	confirmation = models.BooleanField(default=False)
 	user = models.CharField(max_length=70)
+	first_name = models.CharField(max_length=100, default='')
+	last_name = models.CharField(max_length=100, default='')
+	surname = models.CharField(max_length=100, default='')
+	adress = models.CharField(max_length=200, default='')
 	cost = models.IntegerField(default=0)
 
 
@@ -245,10 +251,15 @@ class OrderModel(models.Model):
 	"""Создание заказа"""
 	def get_order(self,request):
 		if request.POST:
-			phone_number = request.POST.get('phone')
+			phone_number = request.POST.get('phone_number')
+			first_name = request.POST.get('first_name')
+			last_name = request.POST.get('last_name')
+			surname = request.POST.get('surname')
+			adress = request.POST.get('adress')
+			cost = request.session['sum_product']
 			user = request.user.username
 			user_id = request.user.id
-			order  = self.objects.create( user=user, phone_number = phone_number)
+			order  = self.objects.create( user=user, phone_number = phone_number,first_name=first_name,last_name=last_name, surname=surname , adress=adress, cost=cost  )
 			order.save()
 			user_basket = BasketModel.objects.filter(user_id=user_id)
 			for i in user_basket:

@@ -36,9 +36,9 @@ ul.hr li {
  {{product.count}}
 
  <button type="submit" class="btn" name='plus'  value="1">+</button>
-  	{%  endfor %}
  </form>
 
+    {%  endfor %}
 
       
   </div>
@@ -50,6 +50,7 @@ ul.hr li {
      </form>
      <form class="form-inline my-2 my-lg-0" action="{% url 'phone_for_order_url' %}" method='post'>{% csrf_token %}
        <li> <button type="submit" class="btn btn-primary btn-lg" > Оформить товары в корзине</button></li>
+       <input type="hidden" name="sum" value='{{sum_product}}'>
     </form>
        <a  href="{% url 'get_coupon_form_url' %}"> <li> <button type="submit" class="btn btn-primary btn-lg""> Ввести купон</button></li>
 </a>

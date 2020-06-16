@@ -5,10 +5,11 @@ from django.shortcuts import redirect
 from django.utils.http import is_safe_url, urlunquote
 from django.http import HttpResponseRedirect
 
+from django.core.exceptions import ValidationError
 
 from users.models import CustomUser
 from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel, CouponModel
-from .forms import SearchProductsForm, CouponForm
+from .forms import SearchProductsForm, CouponForm, OrderForm
 
 
 """Поиск товаров"""
@@ -48,6 +49,8 @@ def search_products(request):
 			request.GET.get('title'),
 			request.GET.get('stock'),
 			request.GET.get('maxrating'))
+		
+		context['count_to_order'] = 1
 
 		return render(request, 'home/index.html', context)
 
@@ -77,6 +80,7 @@ def products_by_category(request, slug):
 	context = CategoryModel.list_by_category(CategoryModel, slug, page_number, form)
 	# context['last_question'] = 'category/%s' % (context['products_category'].slug)
 	context['last_question'] = '?'
+	context['count_to_order'] = 1
 	return render(request, 'home/category.html', context)
 
 def search_by_category(request,slug):
@@ -106,6 +110,7 @@ def search_by_category(request,slug):
 		'paginator' : paginator,
 		'form' : form,
 		'products_category' : products_category,
+		'count_to_order' : 1,
 		}
 		context['last_question'] = '?csrfmiddlewaretoken=%s&from_money=%s&up_to_money=%s&title=%s&popular=%s&maxrating=%s&' % (
 			request.GET.get('csrfmiddlewaretoken'), 
@@ -155,21 +160,29 @@ def get_message(request, slug, product_id, count_to_order):
 def get_basket(request,coupon=1):
 	if request.user.id:
 		user = CustomUser.objects.get(id = request.user.id)
-		# if request.POST.get('coupon'):
+		if request.session.get('coupon_value', False):
+			coupon = request.session.get('coupon_value')
 		# 	coupon = request.POST.get('coupon')
 		# else:
 		# 	coupon = 1
 		context = BasketModel.sum_basket(BasketModel,user, coupon)
+		request.session['sum_product'] = context['sum_product']
 		return render(request, 'home/basket.html', context)
 	return HttpResponse("Войдите в свою учетную запись")
 
 """Отображение формы для ввода номера телефона"""
 def phone_for_order(request):
-	return render(request, 'home/order.html')
+	form = OrderForm()
+	# sum_product = request.POST.get('sum', False)
+	sum_product = request.session['sum_product']
+	context = { 'form' : form, 'sum_product' : sum_product}
+	return render(request, 'home/order.html', context)
 
 """Оформление заказа заказа"""
 def products_on_order(request):
-	return OrderModel.get_order(OrderModel, request)
+	if request.POST.get('condition')  == 'on':
+		return OrderModel.get_order(OrderModel, request)
+	raise ValidationError('Заполните все формы и подвердите заказ')
 
 """Очистка корзины"""
 def clear_basket(request):
@@ -241,10 +254,8 @@ def get_count(request, slug, products_on_stock):
 		if request.session['product_info'][slug] < products_on_stock:
 			request.session['product_info'][slug] += 1
 			request.session.save()
-	# context['count_to_order'] = count_to_order
 	return request.session['product_info'][slug]
-	# return redirect('')
-	# return HttpResponse(request.session['product_info'][slug])
+
 
 def get_coupon_form(request):
 	form = CouponForm()
@@ -257,6 +268,8 @@ def check_coupon(request):
 		# status_coupon = is_coupon(coupon)
 		if CouponModel.is_coupon(CouponModel,coupon_name):
 			coupon = CouponModel.is_coupon(CouponModel,coupon_name)
+			request.session['coupon_value'] = coupon.value
+			request.session.save()
 			# coupon =  int(coupon)
 			return redirect('basket_url')
 			# return get_basket(request, coupon.value)

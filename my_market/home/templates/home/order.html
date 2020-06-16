@@ -1,8 +1,23 @@
 {% extends 'home/base.html' %}
 {% block content %}
-Для оформления заказа введите свой номер телефона
-<form class="form-inline my-2 my-lg-0" action="{% url 'products_on_order_url' %}" method='post'>{% csrf_token %}
+Для оформления заказа введите свои данные:
+<!-- <input class="form-control mr-sm-2" type="text" placeholder="ФИО" aria-label="Number" name="phone">
+<input class="form-control mr-sm-2" type="text" placeholder="Номер телефона" aria-label="Number" name="phone">
+ -->
+<form action="{% url 'products_on_order_url' %}" method='post'> 
+        {% csrf_token %}
+{{sum_product}}
+ Имя <li > {{ form.first_name }} </li>
+ Фамилия<li>  {{form.last_name}}</li>
+Отчество<li>  {{form.surname}}</li>
+ Адресс доставки<li>   {{form.adress}}</li>
+Номер телефона<li>   {{form.phone_number}}</li>
+Я согласен с условиями покупки <input type="checkbox" aria-label="Checkbox for following text input " name='condition' value="on" >
+
+<button class="btn btn-outline-success my-2 my-sm-0" type="submit" >Отправить заказ</button>
+</form>
+<!-- <form class="form-inline my-2 my-lg-0" action="{% url 'products_on_order_url' %}" method='post'>{% csrf_token %}
 <input class="form-control mr-sm-2" type="text" placeholder="Номер телефона" aria-label="Number" name="phone">
 <button class="btn btn-outline-success my-2 my-sm-0" type="submit" >номер</button>
-</form>
+</form> -->
 {% endblock %}
