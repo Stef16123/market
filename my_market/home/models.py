@@ -95,8 +95,8 @@ class ProductDescribeModel(models.Model):
 		return context
 
 	# def if_popular(self):
-	# 	BasketModel.objects.all()
-	# 	BasketModel.objects.get()
+	# 	ProductBasketModel.objects.all()
+	# 	ProductBasketModel.objects.get()
 	# 	if product_describe
 
 	# def get_back(self,request):
@@ -168,14 +168,17 @@ class MarkModel(models.Model):
 
 
 
-
+class BasketModel(models.Model):
+	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
+	sum_in_basket =  models.IntegerField(default=0)
 
 """Корзина"""
-class BasketModel(models.Model):
+class ProductBasketModel(models.Model):
 	user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True)
 	product = models.ForeignKey(ProductModel, on_delete=models.CASCADE, blank=True)
 	product_describe = models.ForeignKey(ProductDescribeModel, on_delete=models.CASCADE, blank=True, default=None)
 	count = models.IntegerField(default=1)
+	product_basket = models.ForeignKey(BasketModel, on_delete=models.CASCADE, blank=True) 
 	# cost = models.IntegerField(default=1)
 
 # ф-я для получения в админ панеле имени пользователя
@@ -189,10 +192,15 @@ class BasketModel(models.Model):
 	"""Вычисление суммы лежащих в корзине товаров"""
 	def sum_basket(self, user, coupon):
 		basket_list = self.objects.filter(user=user)
+		basket = BasketModel.objects.filter(user=user).first()
 		sum_product = 0
+
+		# basket = BasketModel.objects.get(user=user)
 		for product in basket_list:
 			sum_product += product.product_describe.price * product.count * coupon
-		context = {'basket_list' : basket_list, 'sum_product' : sum_product}
+		basket.sum_in_basket = sum_product
+		basket.save()
+		context = {'basket_list' : basket_list, 'sum_product' : basket.sum_in_basket}
 		return context
 
 	"""Добавление товара в корзину"""
@@ -203,11 +211,19 @@ class BasketModel(models.Model):
 			user_basket = self.objects.filter(user=user, product_describe__slug__iexact=slug).first()
 			# update_sum = self.sum_basket(self, user, 1)
 			# request.session['sum_product'] = context['sum_product']
+			tmp_count = abs(count_to_order - user_basket.count) 
 			user_basket.count = count_to_order
 			user_basket.save()
+			if request.session.get('coupon_value', False):
+				user_basket.product_basket.sum_in_basket += describe.price * tmp_count * request.session.get('coupon_value')
+			else:
+				user_basket.product_basket.sum_in_basket += describe.price * tmp_count 
 		else:
-			user_basket = self.objects.create( user=user, product=product, product_describe=describe, count=count_to_order)
+			basket = BasketModel.objects.create( user=user)
+			basket.save()
+			user_basket = self.objects.create( user=user, product=product, product_describe=describe, count=count_to_order, product_basket=basket )
 			user_basket.save()
+			
 		describe.popular += 1
 		describe.save()
 		
@@ -215,14 +231,16 @@ class BasketModel(models.Model):
 		return "Товар успешно добавлен в корзину"
 
 	def delete_basket(self,user_id):
-		user_baskets = BasketModel.objects.filter(user_id=user_id)
+		user_baskets = self.objects.filter(user_id=user_id)
+		basket = BasketModel.objects.get(user_id=user_id)
 		for user_basket in user_baskets:
 			user_basket.product_describe.popular -= 1
 			user_basket.product_describe.save()
 		user_baskets.delete()
+		basket.delete()
 
 	def delete_product(self, user_id, slug):
-		user_baskets = BasketModel.objects.get(user_id=user_id, product_describe__slug__iexact=slug)
+		user_baskets = self.objects.get(user_id=user_id, product_describe__slug__iexact=slug)
 		user_baskets.delete()
 
 
@@ -261,7 +279,7 @@ class OrderModel(models.Model):
 			user_id = request.user.id
 			order  = self.objects.create( user=user, phone_number = phone_number,first_name=first_name,last_name=last_name, surname=surname , adress=adress, cost=cost  )
 			order.save()
-			user_basket = BasketModel.objects.filter(user_id=user_id)
+			user_basket = ProductBasketModel.objects.filter(user_id=user_id)
 			for i in user_basket:
 				product = i.product
 				products_order = ProductOrderModel.objects.create( product=product, order=order)

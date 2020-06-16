@@ -13,8 +13,8 @@ class ProductAdmin(admin.ModelAdmin):
 	inlines = [RatingInLines,]
 
 
-@admin.register(BasketModel)
-class BasketAdmin(admin.ModelAdmin):
+@admin.register(ProductBasketModel)
+class ProductBasketAdmin(admin.ModelAdmin):
 	list_display = ('get_username', '__str__', 'id', )
 	list_filter = ('product_describe__title', 'user')
 
@@ -37,6 +37,7 @@ admin.site.register(CategoryModel)
 admin.site.register(RatingModel)
 admin.site.register(MarkModel)
 
+admin.site.register(BasketModel)
 # admin.site.register(ProductModel)
 # admin.site.register(ProductOrderModel)
 admin.site.register(CouponModel)

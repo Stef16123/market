@@ -8,7 +8,7 @@ from django.http import HttpResponseRedirect
 from django.core.exceptions import ValidationError
 
 from users.models import CustomUser
-from .models import CategoryModel, ProductDescribeModel,  BasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel, CouponModel
+from .models import CategoryModel, ProductDescribeModel,  ProductBasketModel, ProductModel, get_paginate, OrderModel, ProductOrderModel, MarkModel,RatingModel, CouponModel
 from .forms import SearchProductsForm, CouponForm, OrderForm
 
 
@@ -153,7 +153,7 @@ def product_mark(request,slug):
 def get_message(request, slug, product_id, count_to_order):
 	if request.user.id:
 		user = CustomUser.objects.get(id = request.user.id)
-		return HttpResponse(BasketModel.add_to_basket(BasketModel,slug, product_id, user, count_to_order))
+		return HttpResponse(ProductBasketModel.add_to_basket(ProductBasketModel,slug, product_id, user, count_to_order))
 	return HttpResponse("Прежде чем добавить товар в корзину, войдите в свою учетную запись")# надо добавить валид еррор
 
 """Отобразить корзину"""
@@ -165,7 +165,7 @@ def get_basket(request,coupon=1):
 		# 	coupon = request.POST.get('coupon')
 		# else:
 		# 	coupon = 1
-		context = BasketModel.sum_basket(BasketModel,user, coupon)
+		context = ProductBasketModel.sum_basket(ProductBasketModel,user, coupon)
 		request.session['sum_product'] = context['sum_product']
 		return render(request, 'home/basket.html', context)
 	return HttpResponse("Войдите в свою учетную запись")
@@ -187,14 +187,14 @@ def products_on_order(request):
 """Очистка корзины"""
 def clear_basket(request):
 	user_id = request.user.id
-	BasketModel.delete_basket(BasketModel,user_id)
+	ProductBasketModel.delete_basket(ProductBasketModel,user_id)
 	return redirect('basket_url')
 
 """Убрать позицию с корзины"""
 def delete_product_basket(request,slug):
 	if request.user.id:
 		user_id = request.user.id
-		BasketModel.delete_product(BasketModel, user_id, slug)
+		ProductBasketModel.delete_product(ProductBasketModel, user_id, slug)
 	return redirect('basket_url')	
 
 # def back(request):
@@ -212,7 +212,7 @@ def test(request):
 
 def change_count_basket(request, slug):
 	user = CustomUser.objects.get(id = request.user.id)
-	user_basket = BasketModel.objects.get(user=user, product_describe__slug__iexact=slug)
+	user_basket = ProductBasketModel.objects.get(user=user, product_describe__slug__iexact=slug)
 	if request.POST.get('minus', False) == '0':
 		if user_basket.count > 1:
 			user_basket.count -= 1
