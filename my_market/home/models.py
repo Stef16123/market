@@ -194,13 +194,13 @@ class ProductBasketModel(models.Model):
 		basket_list = self.objects.filter(user=user)
 		basket = BasketModel.objects.filter(user=user).first()
 		sum_product = 0
-
-		# basket = BasketModel.objects.get(user=user)
-		for product in basket_list:
-			sum_product += product.product_describe.price * product.count * coupon
-		basket.sum_in_basket = sum_product
-		basket.save()
-		context = {'basket_list' : basket_list, 'sum_product' : basket.sum_in_basket}
+		if basket:
+			# basket = BasketModel.objects.get(user=user)
+			for product in basket_list:
+				sum_product += product.product_describe.price * product.count * coupon
+			basket.sum_in_basket = sum_product
+			basket.save()
+		context = {'basket_list' : basket_list, 'sum_product' : sum_product}
 		return context
 
 	"""Добавление товара в корзину"""
