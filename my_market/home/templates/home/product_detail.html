@@ -16,7 +16,7 @@
    			<p> Нет изображения </p>
 		{% endif %}</li>
     Оцените товар:
-    1
+    {{product_describe.rating.rating}}
 <form action="{% url 'product_mark_url' slug=product_describe.slug %}", method="post">
   {% csrf_token %}
 1<input type="radio" id="star-1" name="rating" value="1">

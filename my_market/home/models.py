@@ -79,10 +79,18 @@ class ProductDescribeModel(models.Model):
 		return "\n".join([c.title for c  in self.category.all()])
 
 # Проверка загружаемой картинки на разрешение х на х, ограничение на загружаемые данные в settings.py (надо переделать!)
-	def clean(self, *args, **kwargs):
+	# def clean(self, *args, **kwargs):
+	# 	if self.image and img_p.open(self.image).size > (564,564):
+	# 			raise ValidationError('Недопустимое разрешение картинки')
+	# 	super(ProductDescribeModel, self).save(*args, **kwargs)
+
+	def save(self, *args, **kwargs):
+		# custom_clean()
 		if self.image and img_p.open(self.image).size > (564,564):
 				raise ValidationError('Недопустимое разрешение картинки')
+		self.full_clean()
 		super(ProductDescribeModel, self).save(*args, **kwargs)
+
 
 	"""Получить информацию о товаре"""
 	def get_product(self,slug):
@@ -145,6 +153,10 @@ class MarkModel(models.Model):
 		rating = RatingModel.objects.get(product=product)
 		if old_mark:
 			mark_tmp = MarkModel.objects.filter(product__slug__iexact=slug, mark=old_mark).first()
+			mark_tmp = MarkModel.objects.filter(mark=old_mark).first()
+			print(f' Вотафак {old_mark}')
+
+			print(f' Вотафак {mark_tmp}')
 			# mark_tmp.mark = mark
 			# mark_tmp.save()
 			mark_tmp.delete()
@@ -159,6 +171,9 @@ class MarkModel(models.Model):
 		sum_marks = 0
 		for mark in marks:
 			sum_marks += mark.mark
+		print(f' марка {marks}')
+		print(f' марка {sum_marks}')
+		
 		return sum_marks
 
 
@@ -204,21 +219,27 @@ class ProductBasketModel(models.Model):
 		return context
 
 	"""Добавление товара в корзину"""
-	def add_to_basket(self, slug, product_id, user, count_to_order):
+	def add_to_basket(self, request, slug, product_id, user, count_to_order):
 		product = ProductModel.objects.get(product_id = product_id)
 		describe = ProductDescribeModel.objects.get(product=product_id)
-		if self.objects.filter(user=user, product_describe__slug__iexact=slug).first():
-			user_basket = self.objects.filter(user=user, product_describe__slug__iexact=slug).first()
+		# if self.objects.filter(user=user, product_describe__slug__iexact=slug).first():
+		if self.objects.filter(user=user, product_id=product_id).first():
+
+			user_basket = self.objects.filter(user=user, product_id=product_id).first()
 			# update_sum = self.sum_basket(self, user, 1)
 			# request.session['sum_product'] = context['sum_product']
-			tmp_count = abs(count_to_order - user_basket.count) 
+			# raise ValidationError(type(count_to_order))
+			# user_basket.count = 
+			# tmp_count = abs(count_to_order - user_basket.count) 
 			user_basket.count = count_to_order
 			user_basket.save()
-			if request.session.get('coupon_value', False):
-				user_basket.product_basket.sum_in_basket += describe.price * tmp_count * request.session.get('coupon_value')
-			else:
-				user_basket.product_basket.sum_in_basket += describe.price * tmp_count 
+			# if request.session.get('coupon_value', False):
+			# 	user_basket.product_basket.sum_in_basket += describe.price * tmp_count * request.session.get('coupon_value')
+			# else:
+			# 	user_basket.product_basket.sum_in_basket += describe.price * tmp_count 
 		else:
+			print(self.objects.filter(user=user, product_id=product_id))
+			# print(f'юзер {user}, {product_id}')
 			basket = BasketModel.objects.create( user=user)
 			basket.save()
 			user_basket = self.objects.create( user=user, product=product, product_describe=describe, count=count_to_order, product_basket=basket )
@@ -226,13 +247,11 @@ class ProductBasketModel(models.Model):
 			
 		describe.popular += 1
 		describe.save()
-		
-
 		return "Товар успешно добавлен в корзину"
 
 	def delete_basket(self,user_id):
 		user_baskets = self.objects.filter(user_id=user_id)
-		basket = BasketModel.objects.get(user_id=user_id)
+		basket = BasketModel.objects.filter(user_id=user_id)
 		for user_basket in user_baskets:
 			user_basket.product_describe.popular -= 1
 			user_basket.product_describe.save()

@@ -139,12 +139,14 @@ def product_detail(request, slug):
 
 def product_mark(request,slug):
 	old_mark = False
-	mark = int(request.POST.get('rating'))
-	if request.session.get(slug, False):
-		old_mark = request.session[slug]
-	request.session[slug] = mark
-	MarkModel.create_or_update_mark(MarkModel, slug, mark, old_mark)
-	RatingModel.change_rating(RatingModel, slug)
+	mark = request.POST.get('rating', False)
+	if mark:
+		mark = int(mark)
+		if request.session.get(slug, False):
+			old_mark = request.session[slug]
+		request.session[slug] = mark
+		MarkModel.create_or_update_mark(MarkModel, slug, mark, old_mark)
+		RatingModel.change_rating(RatingModel, slug)
 	return redirect('/home/%s' % (slug))
 
 
@@ -153,7 +155,7 @@ def product_mark(request,slug):
 def get_message(request, slug, product_id, count_to_order):
 	if request.user.id:
 		user = CustomUser.objects.get(id = request.user.id)
-		return HttpResponse(ProductBasketModel.add_to_basket(ProductBasketModel,slug, product_id, user, count_to_order))
+		return HttpResponse(ProductBasketModel.add_to_basket(ProductBasketModel, slug, request, product_id, user, int(count_to_order)))
 	return HttpResponse("Прежде чем добавить товар в корзину, войдите в свою учетную запись")# надо добавить валид еррор
 
 """Отобразить корзину"""
